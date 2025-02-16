@@ -21,7 +21,11 @@ import {
   TablePagination,
   Container,
   Snackbar,
-  Alert
+  Alert,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem
 } from '@mui/material';
 import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc } from 'firebase/firestore';
 import { db } from '../firebase';
@@ -52,10 +56,10 @@ function Medicines() {
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
   const [deleteId, setDeleteId] = useState(null);
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
-
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(8);
-
+  const [formFilter, setFormFilter] = useState('');
+  const [manufacturerFilter, setManufacturerFilter] = useState('');
   const medicinesCollectionRef = collection(db, 'medicines');
 
   const fetchMedicines = useCallback(async () => {
@@ -178,9 +182,12 @@ function Medicines() {
     document.body.removeChild(link);
   };
 
-  const filteredMedicines = medicines.filter((med) =>
-    med.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredMedicines = medicines.filter((med) => {
+    const searchMatch = med.name.toLowerCase().includes(searchQuery.toLowerCase());
+    const formMatch = formFilter ? med.form === formFilter : true;
+    const manufacturerMatch = manufacturerFilter ? med.manufacturer === manufacturerFilter : true;
+    return searchMatch && formMatch && manufacturerMatch;
+  });
 
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
@@ -194,6 +201,9 @@ function Medicines() {
   const handleCloseSnackbar = () => {
     setSnackbar({ ...snackbar, open: false });
   };
+
+  const uniqueForms = [...new Set(medicines.map((med) => med.form))];
+  const uniqueManufacturers = [...new Set(medicines.map((med) => med.manufacturer))];
 
   return (
     <Container maxWidth="lg">
@@ -324,6 +334,43 @@ function Medicines() {
               }}
             />
           </Box>
+
+          <Grid container spacing={2} sx={{ mb: 2 }}>
+            <Grid item xs={12} sm={6}>
+              <FormControl fullWidth>
+                <InputLabel id="form-filter-label">Форма выпуска</InputLabel>
+                <Select
+                  labelId="form-filter-label"
+                  id="form-filter"
+                  value={formFilter}
+                  label="Форма выпуска"
+                  onChange={(e) => setFormFilter(e.target.value)}
+                >
+                  <MenuItem value="">Все</MenuItem>
+                  {uniqueForms.map((form) => (
+                    <MenuItem key={form} value={form}>{form}</MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <FormControl fullWidth>
+                <InputLabel id="manufacturer-filter-label">Производитель</InputLabel>
+                <Select
+                  labelId="manufacturer-filter-label"
+                  id="manufacturer-filter"
+                  value={manufacturerFilter}
+                  label="Производитель"
+                  onChange={(e) => setManufacturerFilter(e.target.value)}
+                >
+                  <MenuItem value="">Все</MenuItem>
+                  {uniqueManufacturers.map((manufacturer) => (
+                    <MenuItem key={manufacturer} value={manufacturer}>{manufacturer}</MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Grid>
+          </Grid>
 
           <TableContainer component={Paper} sx={{ borderRadius: 2, boxShadow: 3, overflow: 'hidden' }}>
             <Table sx={{ minWidth: 650 }} aria-label="medicines table">
