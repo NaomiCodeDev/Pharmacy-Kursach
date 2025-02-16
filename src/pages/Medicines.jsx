@@ -25,7 +25,8 @@ import {
   FormControl,
   InputLabel,
   Select,
-  MenuItem
+  MenuItem,
+  Collapse
 } from '@mui/material';
 import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc } from 'firebase/firestore';
 import { db } from '../firebase';
@@ -231,7 +232,7 @@ function Medicines() {
           </Box>
         )}
 
-        {showAddForm && (
+        <Collapse in={showAddForm} timeout="auto" unmountOnExit>
           <Paper elevation={6} sx={{ p: 3, mb: 4 }}>
             <Typography variant="h6" sx={{ mb: 2 }}>
               Добавить препарат
@@ -320,7 +321,7 @@ function Medicines() {
               </Button>
             </Box>
           </Paper>
-        )}
+        </Collapse>
 
         <Paper elevation={6} sx={{ p: 3 }}>
           <Box sx={{ mb: 2 }}>
