@@ -38,7 +38,7 @@ function App() {
             </Button>
           </Toolbar>
         </AppBar>
-        <Container maxWidth="xl" sx={{ mt: 4 }}>
+        <Container sx={{ mt: 4 }}>
           <Routes>
             <Route path="/medicines" element={<Medicines />} />
             {/* <Route path="/clients" element={<Clients />} />
