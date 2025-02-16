@@ -1737,6 +1737,21 @@
   resolved "https://registry.npmjs.org/@firebase/webchannel-wrapper/-/webchannel-wrapper-1.0.3.tgz"
   integrity sha512-2xCRM9q9FlzGZCdgDMJwc0gyUkWFtkosy7Xxr6sFgQwn+wMNIWd7xIvYNauU1r64B5L5rsGKy/n9TKJ0aAFeqQ==
 
+"@fontsource/golos-text@^5.1.1":
+  version "5.1.1"
+  resolved "https://registry.npmjs.org/@fontsource/golos-text/-/golos-text-5.1.1.tgz"
+  integrity sha512-tC1TaANWJYDKcuwi4YdY1/MTnsHEqEFDwZtFUW0xE5nqiBKlWKZwYzABFPs4H5ynl6YPxOJztkdO82o6t5cX5g==
+
+"@fontsource/jost@^5.1.2":
+  version "5.1.2"
+  resolved "https://registry.npmjs.org/@fontsource/jost/-/jost-5.1.2.tgz"
+  integrity sha512-2vyoqLeQolotgk/MSlzcFzrjiCyqrg3HT6FAfQQV1HIIb59+t5nYeNlnYFLemxy0mT6yeCOmvpU7WSHT/c6JPg==
+
+"@fontsource/nunito@^5.1.1":
+  version "5.1.1"
+  resolved "https://registry.npmjs.org/@fontsource/nunito/-/nunito-5.1.1.tgz"
+  integrity sha512-yv3SHxTwMcDqs8z73oyR3CzZyrfDOaJg6N2jr6CNAGuh0X+KA6KA/dz8jPwuKFeHzrSFcaQrj3CLAh6ySFvkdw==
+
 "@grpc/grpc-js@~1.9.0":
   version "1.9.15"
   resolved "https://registry.npmjs.org/@grpc/grpc-js/-/grpc-js-1.9.15.tgz"

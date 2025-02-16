@@ -29,6 +29,7 @@ import AddCircleIcon from '@mui/icons-material/AddCircle';
 import SaveIcon from '@mui/icons-material/Save';
 import CancelIcon from '@mui/icons-material/Cancel';
 import SearchIcon from '@mui/icons-material/Search';
+import '@fontsource/golos-text';
 
 function Medicines() {
   const [medicines, setMedicines] = useState([]);

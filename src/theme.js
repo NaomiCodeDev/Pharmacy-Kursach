@@ -1,5 +1,6 @@
 // src/theme.js
 import { createTheme } from '@mui/material/styles';
+import '@fontsource/nunito'; // Импортируем шрифт Nunito
 
 const theme = createTheme({
   palette: {
@@ -17,6 +18,9 @@ const theme = createTheme({
       primary: '#212121', // темно-серый для удобочитаемости
       secondary: '#757575', // приглушенный серый
     },
+  },
+  typography: {
+    fontFamily: ['Nunito', 'sans-serif'].join(','),
   },
 });
 

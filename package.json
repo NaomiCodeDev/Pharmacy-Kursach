@@ -5,6 +5,9 @@
   "dependencies": {
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.0",
+    "@fontsource/golos-text": "^5.1.1",
+    "@fontsource/jost": "^5.1.2",
+    "@fontsource/nunito": "^5.1.1",
     "@mui/icons-material": "^6.4.4",
     "@mui/material": "^6.4.4",
     "@testing-library/dom": "^10.4.0",
