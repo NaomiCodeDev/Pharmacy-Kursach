@@ -290,21 +290,20 @@ function Medicines() {
       )}
 
       <Paper elevation={3} sx={{ p: 3 }}>
-        <Grid container spacing={2} alignItems="center">
-          <Grid item xs={11}>
-            <TextField
-              label="Поиск по названию"
-              fullWidth
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              InputProps={{
-                startAdornment: <SearchIcon sx={{ mr: 1 }} />,
-              }}
-            />
-          </Grid>
-        </Grid>
+        {/* Поле поиска теперь занимает всю ширину */}
+        <Box sx={{ mb: 2 }}>
+          <TextField
+            label="Поиск по названию"
+            fullWidth
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            InputProps={{
+              startAdornment: <SearchIcon sx={{ mr: 1 }} />,
+            }}
+          />
+        </Box>
 
-        <TableContainer component={Paper} sx={{ borderRadius: 2, boxShadow: 3, mt: 3 }}>
+        <TableContainer component={Paper} sx={{ borderRadius: 2, boxShadow: 3 }}>
           <Table sx={{ minWidth: 650 }} aria-label="medicines table">
             <TableHead>
               <TableRow sx={{ backgroundColor: 'primary.main' }}>
