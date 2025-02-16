@@ -101,7 +101,7 @@ function Medicines() {
       const medicineDoc = doc(db, 'medicines', editingId);
       const { id, ...updateData } = editingMedicine;
       await updateDoc(medicineDoc, updateData);
-      setMedicines(medicines.map((med) => med.id === editingId ? editingMedicine : med));
+      setMedicines(medicines.map((med) => (med.id === editingId ? editingMedicine : med)));
       setEditingId(null);
       setEditingMedicine(null);
     } catch (error) {
@@ -133,8 +133,8 @@ function Medicines() {
     Papa.parse(file, {
       header: true,
       complete: async (results) => {
-        const importedData = results.data.filter(item =>
-          Object.values(item).some(value => value !== "" && value != null)
+        const importedData = results.data.filter(
+          (item) => Object.values(item).some((value) => value !== '' && value != null)
         );
 
         for (let item of importedData) {
@@ -157,7 +157,7 @@ function Medicines() {
   const exportData = () => {
     const medicinesWithoutId = medicines.map(({ id, ...rest }) => rest);
     const csv = Papa.unparse(medicinesWithoutId, { delimiter: ';' });
-    const blob = new Blob(["\uFEFF" + csv], { type: 'text/csv;charset=utf-8;' });
+    const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.setAttribute('href', url);
@@ -252,7 +252,9 @@ function Medicines() {
                 type="number"
                 fullWidth
                 value={newMedicine.quantity}
-                onChange={(e) => setNewMedicine({ ...newMedicine, quantity: Number(e.target.value) })}
+                onChange={(e) =>
+                  setNewMedicine({ ...newMedicine, quantity: Number(e.target.value) })
+                }
               />
             </Grid>
             <Grid item xs={12} sm={6} md={4}>
@@ -261,7 +263,9 @@ function Medicines() {
                 type="number"
                 fullWidth
                 value={newMedicine.price}
-                onChange={(e) => setNewMedicine({ ...newMedicine, price: Number(e.target.value) })}
+                onChange={(e) =>
+                  setNewMedicine({ ...newMedicine, price: Number(e.target.value) })
+                }
               />
             </Grid>
           </Grid>
@@ -284,25 +288,6 @@ function Medicines() {
           </Box>
         </Paper>
       )}
-
-      <Paper elevation={3} sx={{ p: 3, mb: 4 }}>
-        <Typography variant="h6" sx={{ mb: 2 }}>
-          Импорт / Экспорт данных
-        </Typography>
-        <Grid container spacing={2} alignItems="center" justify="center">
-          <Grid item>
-            <Button variant="outlined" component="label">
-              Импорт CSV
-              <input type="file" accept=".csv" hidden onChange={importData} />
-            </Button>
-          </Grid>
-          <Grid item>
-            <Button variant="outlined" onClick={exportData}>
-              Экспорт в CSV
-            </Button>
-          </Grid>
-        </Grid>
-      </Paper>
 
       <Paper elevation={3} sx={{ p: 3 }}>
         <Grid container spacing={2} alignItems="center">
@@ -349,28 +334,39 @@ function Medicines() {
                         <TableCell>
                           <TextField
                             value={editingMedicine.name}
-                            onChange={(e) => setEditingMedicine({ ...editingMedicine, name: e.target.value })}
+                            onChange={(e) =>
+                              setEditingMedicine({ ...editingMedicine, name: e.target.value })
+                            }
                             variant="standard"
                           />
                         </TableCell>
                         <TableCell>
                           <TextField
                             value={editingMedicine.form}
-                            onChange={(e) => setEditingMedicine({ ...editingMedicine, form: e.target.value })}
+                            onChange={(e) =>
+                              setEditingMedicine({ ...editingMedicine, form: e.target.value })
+                            }
                             variant="standard"
                           />
                         </TableCell>
                         <TableCell>
                           <TextField
                             value={editingMedicine.dosage}
-                            onChange={(e) => setEditingMedicine({ ...editingMedicine, dosage: e.target.value })}
+                            onChange={(e) =>
+                              setEditingMedicine({ ...editingMedicine, dosage: e.target.value })
+                            }
                             variant="standard"
                           />
                         </TableCell>
                         <TableCell>
                           <TextField
                             value={editingMedicine.manufacturer}
-                            onChange={(e) => setEditingMedicine({ ...editingMedicine, manufacturer: e.target.value })}
+                            onChange={(e) =>
+                              setEditingMedicine({
+                                ...editingMedicine,
+                                manufacturer: e.target.value
+                              })
+                            }
                             variant="standard"
                           />
                         </TableCell>
@@ -379,7 +375,12 @@ function Medicines() {
                             type="date"
                             InputLabelProps={{ shrink: true }}
                             value={editingMedicine.expiryDate}
-                            onChange={(e) => setEditingMedicine({ ...editingMedicine, expiryDate: e.target.value })}
+                            onChange={(e) =>
+                              setEditingMedicine({
+                                ...editingMedicine,
+                                expiryDate: e.target.value
+                              })
+                            }
                             variant="standard"
                           />
                         </TableCell>
@@ -387,7 +388,12 @@ function Medicines() {
                           <TextField
                             type="number"
                             value={editingMedicine.quantity}
-                            onChange={(e) => setEditingMedicine({ ...editingMedicine, quantity: Number(e.target.value) })}
+                            onChange={(e) =>
+                              setEditingMedicine({
+                                ...editingMedicine,
+                                quantity: Number(e.target.value)
+                              })
+                            }
                             variant="standard"
                           />
                         </TableCell>
@@ -395,7 +401,12 @@ function Medicines() {
                           <TextField
                             type="number"
                             value={editingMedicine.price}
-                            onChange={(e) => setEditingMedicine({ ...editingMedicine, price: Number(e.target.value) })}
+                            onChange={(e) =>
+                              setEditingMedicine({
+                                ...editingMedicine,
+                                price: Number(e.target.value)
+                              })
+                            }
                             variant="standard"
                           />
                         </TableCell>
@@ -418,10 +429,17 @@ function Medicines() {
                         <TableCell>{med.quantity}</TableCell>
                         <TableCell>{med.price}</TableCell>
                         <TableCell>
-                          <IconButton color="primary" onClick={() => startEditing(med)} sx={{ mr: 1 }}>
+                          <IconButton
+                            color="primary"
+                            onClick={() => startEditing(med)}
+                            sx={{ mr: 1 }}
+                          >
                             <EditIcon />
                           </IconButton>
-                          <IconButton color="error" onClick={() => confirmDeleteMedicine(med.id)}>
+                          <IconButton
+                            color="error"
+                            onClick={() => confirmDeleteMedicine(med.id)}
+                          >
                             <DeleteIcon />
                           </IconButton>
                         </TableCell>
@@ -441,6 +459,26 @@ function Medicines() {
             onRowsPerPageChange={handleChangeRowsPerPage}
           />
         </TableContainer>
+      </Paper>
+
+      {/* Окно импорта/экспорта, размещённое под таблицей */}
+      <Paper elevation={3} sx={{ p: 3, mt: 4 }}>
+      <Typography variant="h6" component="h1" align="center" sx={{ mb: 4 }}>
+          Импорт / Экспорт данных
+        </Typography>
+        <Grid container spacing={2} alignItems="center" justifyContent="center">
+          <Grid item>
+            <Button variant="outlined" component="label">
+              Импорт CSV
+              <input type="file" accept=".csv" hidden onChange={importData} />
+            </Button>
+          </Grid>
+          <Grid item>
+            <Button variant="outlined" onClick={exportData}>
+              Экспорт в CSV
+            </Button>
+          </Grid>
+        </Grid>
       </Paper>
 
       <Dialog
