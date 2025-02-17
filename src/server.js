@@ -62,6 +62,24 @@ db.serialize(() => {
       console.log("Таблица clients успешно создана или уже существует");
     }
   });
+
+  // Таблица recipes (новая)
+  db.run(`
+    CREATE TABLE IF NOT EXISTS recipes (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      recipeNumber TEXT NOT NULL,
+      issueDate TEXT,
+      patientName TEXT,
+      prescribedMedicines TEXT,
+      expiryDate TEXT
+    )
+  `, (err) => {
+    if (err) {
+      console.error("Ошибка при создании таблицы recipes:", err.message);
+    } else {
+      console.log("Таблица recipes успешно создана или уже существует");
+    }
+  });
 });
 
 // Обработчики для medicines
@@ -205,6 +223,84 @@ app.delete('/api/clients/:id', (req, res) => {
       return res.status(404).json({ error: "Клиент не найден" });
     }
     res.json({ message: "Клиент удалён", id });
+  });
+});
+
+// Обработчики для recipes
+app.get('/api/recipes', (req, res) => {
+  db.all("SELECT * FROM recipes", (err, rows) => {
+    if (err) {
+      console.error("Ошибка при получении рецептов:", err.message);
+      return res.status(500).json({ error: err.message });
+    }
+    res.json(rows);
+  });
+});
+
+app.post('/api/recipes', (req, res) => {
+  const { recipeNumber, issueDate, patientName, prescribedMedicines, expiryDate } = req.body;
+  if (!recipeNumber) {
+    return res.status(400).json({ error: "Номер рецепта обязателен" });
+  }
+  const query = `
+    INSERT INTO recipes (recipeNumber, issueDate, patientName, prescribedMedicines, expiryDate)
+    VALUES (?, ?, ?, ?, ?)
+  `;
+  db.run(query, [recipeNumber, issueDate, patientName, prescribedMedicines, expiryDate], function(err) {
+    if (err) {
+      console.error("Ошибка при добавлении рецепта:", err.message);
+      return res.status(500).json({ error: err.message });
+    }
+    const newRecipe = {
+      id: this.lastID,
+      recipeNumber,
+      issueDate,
+      patientName,
+      prescribedMedicines,
+      expiryDate
+    };
+    res.json(newRecipe);
+  });
+});
+
+app.put('/api/recipes/:id', (req, res) => {
+  const { id } = req.params;
+  const { recipeNumber, issueDate, patientName, prescribedMedicines, expiryDate } = req.body;
+  const query = `
+    UPDATE recipes
+    SET recipeNumber = ?, issueDate = ?, patientName = ?, prescribedMedicines = ?, expiryDate = ?
+    WHERE id = ?
+  `;
+  db.run(query, [recipeNumber, issueDate, patientName, prescribedMedicines, expiryDate, id], function(err) {
+    if (err) {
+      console.error("Ошибка при обновлении рецепта:", err.message);
+      return res.status(500).json({ error: err.message });
+    }
+    if (this.changes === 0) {
+      return res.status(404).json({ error: "Рецепт не найден" });
+    }
+    res.json({ 
+      id: Number(id), 
+      recipeNumber, 
+      issueDate, 
+      patientName, 
+      prescribedMedicines, 
+      expiryDate 
+    });
+  });
+});
+
+app.delete('/api/recipes/:id', (req, res) => {
+  const { id } = req.params;
+  db.run("DELETE FROM recipes WHERE id = ?", [id], function(err) {
+    if (err) {
+      console.error("Ошибка при удалении рецепта:", err.message);
+      return res.status(500).json({ error: err.message });
+    }
+    if (this.changes === 0) {
+      return res.status(404).json({ error: "Рецепт не найден" });
+    }
+    res.json({ message: "Рецепт удалён", id });
   });
 });
 
