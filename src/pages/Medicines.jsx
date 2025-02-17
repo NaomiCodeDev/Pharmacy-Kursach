@@ -28,8 +28,6 @@ import {
   MenuItem,
   Collapse
 } from '@mui/material';
-import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc } from 'firebase/firestore';
-import { db } from '../firebase';
 import Papa from 'papaparse';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -61,17 +59,17 @@ function Medicines() {
   const [rowsPerPage, setRowsPerPage] = useState(8);
   const [formFilter, setFormFilter] = useState('');
   const [manufacturerFilter, setManufacturerFilter] = useState('');
-  const medicinesCollectionRef = collection(db, 'medicines');
 
   const fetchMedicines = useCallback(async () => {
     try {
-      const data = await getDocs(medicinesCollectionRef);
-      const meds = data.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-      setMedicines(meds);
+      const response = await fetch('http://localhost:5000/api/medicines');
+      const data = await response.json();
+      setMedicines(data);
     } catch (error) {
       console.error('Ошибка при получении данных: ', error);
+      setSnackbar({ open: true, message: 'Ошибка при загрузке данных!', severity: 'error' });
     }
-  }, [medicinesCollectionRef]);
+  }, []);
 
   useEffect(() => {
     fetchMedicines();
@@ -79,8 +77,15 @@ function Medicines() {
 
   const createMedicine = async () => {
     try {
-      const docRef = await addDoc(medicinesCollectionRef, newMedicine);
-      setMedicines([...medicines, { id: docRef.id, ...newMedicine }]);
+      const response = await fetch('http://localhost:5000/api/medicines', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(newMedicine),
+      });
+      const data = await response.json();
+      setMedicines([...medicines, data]);
       setNewMedicine({
         name: '',
         form: '',
@@ -110,10 +115,15 @@ function Medicines() {
 
   const saveEditing = async () => {
     try {
-      const medicineDoc = doc(db, 'medicines', editingId);
-      const { id, ...updateData } = editingMedicine;
-      await updateDoc(medicineDoc, updateData);
-      setMedicines(medicines.map((med) => (med.id === editingId ? editingMedicine : med)));
+      const response = await fetch(`http://localhost:5000/api/medicines/${editingId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(editingMedicine),
+      });
+      const updatedMedicine = await response.json();
+      setMedicines(medicines.map((med) => (med.id === editingId ? updatedMedicine : med)));
       setEditingId(null);
       setEditingMedicine(null);
       setSnackbar({ open: true, message: 'Препарат успешно обновлён!', severity: 'success' });
@@ -130,8 +140,9 @@ function Medicines() {
 
   const handleDeleteMedicine = async () => {
     try {
-      const medicineDoc = doc(db, 'medicines', deleteId);
-      await deleteDoc(medicineDoc);
+      await fetch(`http://localhost:5000/api/medicines/${deleteId}`, {
+        method: 'DELETE',
+      });
       setMedicines(medicines.filter((med) => med.id !== deleteId));
       setOpenDeleteDialog(false);
       setDeleteId(null);
@@ -154,10 +165,18 @@ function Medicines() {
         );
 
         for (let item of importedData) {
-          item.quantity = Number(item.quantity) || 0;
-          item.price = Number(item.price) || 0;
           try {
-            await addDoc(medicinesCollectionRef, item);
+            await fetch('http://localhost:5000/api/medicines', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                ...item,
+                quantity: Number(item.quantity) || 0,
+                price: Number(item.price) || 0
+              }),
+            });
           } catch (error) {
             console.error('Ошибка при импорте: ', error);
           }
@@ -208,14 +227,7 @@ function Medicines() {
 
   return (
     <Container maxWidth="lg">
-      <Box
-        sx={{
-          p: 4,
-          background: 'rgb(245 245 245)',
-          borderRadius: 2,
-          minHeight: '100vh'
-        }}
-      >
+      <Box sx={{ p: 4, background: 'rgb(245 245 245)', borderRadius: 2, minHeight: '100vh' }}>
         <Typography variant="h4" component="h1" align="center" sx={{ mb: 4, fontWeight: 'bold', color: 'primary.dark' }}>
           Препараты
         </Typography>
@@ -286,9 +298,7 @@ function Medicines() {
                   type="number"
                   fullWidth
                   value={newMedicine.quantity}
-                  onChange={(e) =>
-                    setNewMedicine({ ...newMedicine, quantity: Number(e.target.value) })
-                  }
+                  onChange={(e) => setNewMedicine({ ...newMedicine, quantity: Number(e.target.value) })}
                 />
               </Grid>
               <Grid item xs={12} sm={6} md={4}>
@@ -297,9 +307,7 @@ function Medicines() {
                   type="number"
                   fullWidth
                   value={newMedicine.price}
-                  onChange={(e) =>
-                    setNewMedicine({ ...newMedicine, price: Number(e.target.value) })
-                  }
+                  onChange={(e) => setNewMedicine({ ...newMedicine, price: Number(e.target.value) })}
                 />
               </Grid>
             </Grid>
