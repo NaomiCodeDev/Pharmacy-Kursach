@@ -23,8 +23,9 @@ const db = new sqlite3.Database(dbPath, (err) => {
   }
 });
 
-// Создаем таблицу medicines, если она не существует
+// Создаем таблицы, если они не существуют
 db.serialize(() => {
+  // Таблица medicines
   db.run(`
     CREATE TABLE IF NOT EXISTS medicines (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -43,9 +44,27 @@ db.serialize(() => {
       console.log("Таблица medicines успешно создана или уже существует");
     }
   });
+
+  // Таблица clients
+  db.run(`
+    CREATE TABLE IF NOT EXISTS clients (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      fullName TEXT NOT NULL,
+      birthDate TEXT,
+      phoneNumber TEXT,
+      address TEXT,
+      purchaseHistory TEXT
+    )
+  `, (err) => {
+    if (err) {
+      console.error("Ошибка при создании таблицы clients:", err.message);
+    } else {
+      console.log("Таблица clients успешно создана или уже существует");
+    }
+  });
 });
 
-// GET /api/medicines - получение всех препаратов
+// Обработчики для medicines
 app.get('/api/medicines', (req, res) => {
   db.all("SELECT * FROM medicines", (err, rows) => {
     if (err) {
@@ -56,7 +75,6 @@ app.get('/api/medicines', (req, res) => {
   });
 });
 
-// POST /api/medicines - добавление нового препарата
 app.post('/api/medicines', (req, res) => {
   const { name, form, dosage, manufacturer, expiryDate, quantity, price } = req.body;
   if (!name) {
@@ -85,7 +103,6 @@ app.post('/api/medicines', (req, res) => {
   });
 });
 
-// PUT /api/medicines/:id - обновление препарата по ID
 app.put('/api/medicines/:id', (req, res) => {
   const { id } = req.params;
   const { name, form, dosage, manufacturer, expiryDate, quantity, price } = req.body;
@@ -102,12 +119,10 @@ app.put('/api/medicines/:id', (req, res) => {
     if (this.changes === 0) {
       return res.status(404).json({ error: "Препарат не найден" });
     }
-    // Отправляем обновленные данные
     res.json({ id: Number(id), name, form, dosage, manufacturer, expiryDate, quantity, price });
   });
 });
 
-// DELETE /api/medicines/:id - удаление препарата по ID
 app.delete('/api/medicines/:id', (req, res) => {
   const { id } = req.params;
   db.run("DELETE FROM medicines WHERE id = ?", [id], function(err) {
@@ -119,6 +134,77 @@ app.delete('/api/medicines/:id', (req, res) => {
       return res.status(404).json({ error: "Препарат не найден" });
     }
     res.json({ message: "Препарат удалён", id });
+  });
+});
+
+// Обработчики для clients
+app.get('/api/clients', (req, res) => {
+  db.all("SELECT * FROM clients", (err, rows) => {
+    if (err) {
+      console.error("Ошибка при получении данных:", err.message);
+      return res.status(500).json({ error: err.message });
+    }
+    res.json(rows);
+  });
+});
+
+app.post('/api/clients', (req, res) => {
+  const { fullName, birthDate, phoneNumber, address, purchaseHistory } = req.body;
+  if (!fullName) {
+    return res.status(400).json({ error: "ФИО клиента обязательно" });
+  }
+  const query = `
+    INSERT INTO clients (fullName, birthDate, phoneNumber, address, purchaseHistory)
+    VALUES (?, ?, ?, ?, ?)
+  `;
+  db.run(query, [fullName, birthDate, phoneNumber, address, purchaseHistory], function(err) {
+    if (err) {
+      console.error("Ошибка при добавлении клиента:", err.message);
+      return res.status(500).json({ error: err.message });
+    }
+    const newClient = {
+      id: this.lastID,
+      fullName,
+      birthDate,
+      phoneNumber,
+      address,
+      purchaseHistory
+    };
+    res.json(newClient);
+  });
+});
+
+app.put('/api/clients/:id', (req, res) => {
+  const { id } = req.params;
+  const { fullName, birthDate, phoneNumber, address, purchaseHistory } = req.body;
+  const query = `
+    UPDATE clients
+    SET fullName = ?, birthDate = ?, phoneNumber = ?, address = ?, purchaseHistory = ?
+    WHERE id = ?
+  `;
+  db.run(query, [fullName, birthDate, phoneNumber, address, purchaseHistory, id], function(err) {
+    if (err) {
+      console.error("Ошибка при обновлении данных клиента:", err.message);
+      return res.status(500).json({ error: err.message });
+    }
+    if (this.changes === 0) {
+      return res.status(404).json({ error: "Клиент не найден" });
+    }
+    res.json({ id: Number(id), fullName, birthDate, phoneNumber, address, purchaseHistory });
+  });
+});
+
+app.delete('/api/clients/:id', (req, res) => {
+  const { id } = req.params;
+  db.run("DELETE FROM clients WHERE id = ?", [id], function(err) {
+    if (err) {
+      console.error("Ошибка при удалении клиента:", err.message);
+      return res.status(500).json({ error: err.message });
+    }
+    if (this.changes === 0) {
+      return res.status(404).json({ error: "Клиент не найден" });
+    }
+    res.json({ message: "Клиент удалён", id });
   });
 });
 

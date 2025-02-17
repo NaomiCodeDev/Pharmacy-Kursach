@@ -4,7 +4,7 @@ import { AppBar, Toolbar, Button, Container, Box } from '@mui/material';
 import { ThemeProvider } from '@mui/material/styles';
 import theme from './theme';
 import Medicines from './pages/Medicines';
-// import Clients from './pages/Clients';
+import Clients from './pages/Clients'; // Раскомментируем эту строку
 // import Recipes from './pages/Recipes';
 // import Sales from './pages/Sales';
 // import Supplies from './pages/Supplies';
@@ -41,8 +41,8 @@ function App() {
         <Container sx={{ mt: 4 }}>
           <Routes>
             <Route path="/medicines" element={<Medicines />} />
-            {/* <Route path="/clients" element={<Clients />} />
-            <Route path="/recipes" element={<Recipes />} />
+            <Route path="/clients" element={<Clients />} />
+            {/* <Route path="/recipes" element={<Recipes />} />
             <Route path="/sales" element={<Sales />} />
             <Route path="/supplies" element={<Supplies />} /> */}
           </Routes>
