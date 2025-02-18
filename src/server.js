@@ -81,7 +81,7 @@ db.serialize(() => {
     }
   });
 
-  // Таблица sales
+  // Таблица sales (новая)
   db.run(`
     CREATE TABLE IF NOT EXISTS sales (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -95,24 +95,6 @@ db.serialize(() => {
       console.error("Ошибка при создании таблицы sales:", err.message);
     } else {
       console.log("Таблица sales успешно создана или уже существует");
-    }
-  });
-
-  // Таблица supplies
-  db.run(`
-    CREATE TABLE IF NOT EXISTS supplies (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      supplyNumber TEXT NOT NULL,
-      supplyDate TEXT,
-      medicineList TEXT,
-      quantity INTEGER DEFAULT 0,
-      supplier TEXT
-    )
-  `, (err) => {
-    if (err) {
-      console.error("Ошибка при создании таблицы supplies:", err.message);
-    } else {
-      console.log("Таблица supplies успешно создана или уже существует");
     }
   });
 });
@@ -339,7 +321,7 @@ app.delete('/api/recipes/:id', (req, res) => {
   });
 });
 
-// Обработчики для sales
+// Обработчики для sales (новые)
 app.get('/api/sales', (req, res) => {
   db.all("SELECT * FROM sales", (err, rows) => {
     if (err) {
@@ -491,77 +473,6 @@ app.delete('/api/sales/:id', (req, res) => {
       }
       res.json({ message: "Продажа удалена", id });
     });
-  });
-});
-
-// Обработчики для supplies
-app.get('/api/supplies', (req, res) => {
-  db.all("SELECT * FROM supplies", (err, rows) => {
-    if (err) {
-      console.error("Ошибка при получении данных о поставках:", err.message);
-      return res.status(500).json({ error: err.message });
-    }
-    res.json(rows);
-  });
-});
-
-app.post('/api/supplies', (req, res) => {
-  const { supplyNumber, supplyDate, medicineList, quantity, supplier } = req.body;
-  if (!supplyNumber) {
-    return res.status(400).json({ error: "Номер поставки обязателен" });
-  }
-  const query = `
-    INSERT INTO supplies (supplyNumber, supplyDate, medicineList, quantity, supplier)
-    VALUES (?, ?, ?, ?, ?)
-  `;
-  db.run(query, [supplyNumber, supplyDate, medicineList, quantity, supplier], function(err) {
-    if (err) {
-      console.error("Ошибка при добавлении поставки:", err.message);
-      return res.status(500).json({ error: err.message });
-    }
-    const newSupply = {
-      id: this.lastID,
-      supplyNumber,
-      supplyDate,
-      medicineList,
-      quantity,
-      supplier
-    };
-    res.json(newSupply);
-  });
-});
-
-app.put('/api/supplies/:id', (req, res) => {
-  const { id } = req.params;
-  const { supplyNumber, supplyDate, medicineList, quantity, supplier } = req.body;
-  const query = `
-    UPDATE supplies
-    SET supplyNumber = ?, supplyDate = ?, medicineList = ?, quantity = ?, supplier = ?
-    WHERE id = ?
-  `;
-  db.run(query, [supplyNumber, supplyDate, medicineList, quantity, supplier, id], function(err) {
-    if (err) {
-      console.error("Ошибка при обновлении поставки:", err.message);
-      return res.status(500).json({ error: err.message });
-    }
-    if (this.changes === 0) {
-      return res.status(404).json({ error: "Поставка не найдена" });
-    }
-    res.json({ id: Number(id), supplyNumber, supplyDate, medicineList, quantity, supplier });
-  });
-});
-
-app.delete('/api/supplies/:id', (req, res) => {
-  const { id } = req.params;
-  db.run("DELETE FROM supplies WHERE id = ?", [id], function(err) {
-    if (err) {
-      console.error("Ошибка при удалении поставки:", err.message);
-      return res.status(500).json({ error: err.message });
-    }
-    if (this.changes === 0) {
-      return res.status(404).json({ error: "Поставка не найдена" });
-    }
-    res.json({ message: "Поставка удалена", id });
   });
 });
 

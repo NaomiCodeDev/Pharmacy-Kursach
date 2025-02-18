@@ -22,6 +22,10 @@ import {
   Container,
   Snackbar,
   Alert,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
   Collapse
 } from '@mui/material';
 import Papa from 'papaparse';
@@ -40,9 +44,9 @@ function Supplies() {
   const [newSupply, setNewSupply] = useState({
     supplyNumber: '',
     supplyDate: '',
-    medicineList: '',
-    quantity: 0,
-    supplier: ''
+    medicinesList: '',
+    quantities: '',
+    regularSupplier: ''
   });
   const [searchQuery, setSearchQuery] = useState('');
   const [showAddForm, setShowAddForm] = useState(false);
@@ -51,6 +55,7 @@ function Supplies() {
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(8);
+  const [supplierFilter, setSupplierFilter] = useState('');
 
   const fetchSupplies = useCallback(async () => {
     try {
@@ -81,9 +86,9 @@ function Supplies() {
       setNewSupply({
         supplyNumber: '',
         supplyDate: '',
-        medicineList: '',
-        quantity: 0,
-        supplier: ''
+        medicinesList: '',
+        quantities: '',
+        regularSupplier: ''
       });
       setShowAddForm(false);
       setSnackbar({ open: true, message: 'Поставка успешно добавлена!', severity: 'success' });
@@ -161,10 +166,7 @@ function Supplies() {
               headers: {
                 'Content-Type': 'application/json',
               },
-              body: JSON.stringify({
-                ...item,
-                quantity: Number(item.quantity) || 0
-              }),
+              body: JSON.stringify(item),
             });
           } catch (error) {
             console.error('Ошибка при импорте: ', error);
@@ -192,8 +194,10 @@ function Supplies() {
   };
 
   const filteredSupplies = supplies.filter((sup) => {
-    const searchMatch = sup.supplyNumber.toLowerCase().includes(searchQuery.toLowerCase());
-    return searchMatch;
+    const searchMatch = sup.supplyNumber.toString().includes(searchQuery.toLowerCase()) ||
+                       sup.medicinesList.toLowerCase().includes(searchQuery.toLowerCase());
+    const supplierMatch = supplierFilter ? sup.regularSupplier === supplierFilter : true;
+    return searchMatch && supplierMatch;
   });
 
   const handleChangePage = (event, newPage) => {
@@ -208,6 +212,8 @@ function Supplies() {
   const handleCloseSnackbar = () => {
     setSnackbar({ ...snackbar, open: false });
   };
+
+  const uniqueSuppliers = [...new Set(supplies.map((sup) => sup.regularSupplier))];
 
   return (
     <Container maxWidth="lg">
@@ -254,27 +260,30 @@ function Supplies() {
               </Grid>
               <Grid item xs={12} sm={6} md={4}>
                 <TextField
-                  label="Список поступивших препаратов"
+                  label="Список препаратов"
                   fullWidth
-                  value={newSupply.medicineList}
-                  onChange={(e) => setNewSupply({ ...newSupply, medicineList: e.target.value })}
+                  multiline
+                  rows={2}
+                  value={newSupply.medicinesList}
+                  onChange={(e) => setNewSupply({ ...newSupply, medicinesList: e.target.value })}
                 />
               </Grid>
               <Grid item xs={12} sm={6} md={4}>
                 <TextField
                   label="Количество каждого препарата"
-                  type="number"
                   fullWidth
-                  value={newSupply.quantity}
-                  onChange={(e) => setNewSupply({ ...newSupply, quantity: Number(e.target.value) })}
+                  multiline
+                  rows={2}
+                  value={newSupply.quantities}
+                  onChange={(e) => setNewSupply({ ...newSupply, quantities: e.target.value })}
                 />
               </Grid>
               <Grid item xs={12} sm={6} md={4}>
                 <TextField
                   label="Постоянный поставщик"
                   fullWidth
-                  value={newSupply.supplier}
-                  onChange={(e) => setNewSupply({ ...newSupply, supplier: e.target.value })}
+                  value={newSupply.regularSupplier}
+                  onChange={(e) => setNewSupply({ ...newSupply, regularSupplier: e.target.value })}
                 />
               </Grid>
             </Grid>
@@ -301,7 +310,7 @@ function Supplies() {
         <Paper elevation={6} sx={{ p: 3 }}>
           <Box sx={{ mb: 2 }}>
             <TextField
-              label="Поиск по номеру поставки"
+              label="Поиск по номеру поставки или препаратам"
               fullWidth
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -311,14 +320,34 @@ function Supplies() {
             />
           </Box>
 
+          <Grid container spacing={2} sx={{ mb: 2 }}>
+            <Grid item xs={12}>
+              <FormControl fullWidth>
+                <InputLabel id="supplier-filter-label">Постоянный поставщик</InputLabel>
+                <Select
+                  labelId="supplier-filter-label"
+                  id="supplier-filter"
+                  value={supplierFilter}
+                  label="Постоянный поставщик"
+                  onChange={(e) => setSupplierFilter(e.target.value)}
+                >
+                  <MenuItem value="">Все</MenuItem>
+                  {uniqueSuppliers.map((supplier) => (
+                    <MenuItem key={supplier} value={supplier}>{supplier}</MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Grid>
+          </Grid>
+
           <TableContainer component={Paper} sx={{ borderRadius: 2, boxShadow: 3, overflow: 'hidden' }}>
             <Table sx={{ minWidth: 650 }} aria-label="supplies table">
               <TableHead>
                 <TableRow sx={{ backgroundColor: 'primary.main' }}>
                   <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Номер поставки</TableCell>
                   <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Дата поставки</TableCell>
-                  <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Список поступивших препаратов</TableCell>
-                  <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Количество каждого препарата</TableCell>
+                  <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Список препаратов</TableCell>
+                  <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Количество</TableCell>
                   <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Постоянный поставщик</TableCell>
                   <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Действия</TableCell>
                 </TableRow>
@@ -349,7 +378,6 @@ function Supplies() {
                           <TableCell>
                             <TextField
                               type="date"
-                              InputLabelProps={{ shrink: true }}
                               value={editingSupply.supplyDate}
                               onChange={(e) =>
                                 setEditingSupply({ ...editingSupply, supplyDate: e.target.value })
@@ -359,130 +387,134 @@ function Supplies() {
                           </TableCell>
                           <TableCell>
                             <TextField
-                              value={editingSupply.medicineList}
+                              multiline
+                              value={editingSupply.medicinesList}
                               onChange={(e) =>
-                                setEditingSupply({ ...editingSupply, medicineList: e.target.value })
+                                setEditingSupply({ ...editingSupply, medicinesList: e.target.value })
                               }
                               variant="standard"
-                            />
-                          </TableCell>
-                          <TableCell>
-                            <TextField
-                              type="number"
-                              value={editingSupply.quantity}
-                              onChange={(e) =>
-                                setEditingSupply({ ...editingSupply, quantity: Number(e.target.value) })
-                              }
-                              variant="standard"
-                            />
-                          </TableCell>
-                          <TableCell>
-                            <TextField
-                              value={editingSupply.supplier}
-                              onChange={(e) =>
-                                setEditingSupply({ ...editingSupply, supplier: e.target.value })
-                              }
-                              variant="standard"
-                            />
-                          </TableCell>
-                          <TableCell>
-                            <IconButton color="primary" onClick={saveEditing} sx={{ mr: 1 }}>
-                              <SaveIcon />
-                            </IconButton>
-                            <IconButton color="secondary" onClick={cancelEditing}>
-                              <CancelIcon />
-                            </IconButton>
-                          </TableCell>
-                        </>
-                      ) : (
-                        <>
-                          <TableCell>{sup.supplyNumber}</TableCell>
-                          <TableCell>{sup.supplyDate}</TableCell>
-                          <TableCell>{sup.medicineList}</TableCell>
-                          <TableCell>{sup.quantity}</TableCell>
-                          <TableCell>{sup.supplier}</TableCell>
-                          <TableCell>
-                            <IconButton
-                              color="primary"
-                              onClick={() => startEditing(sup)}
-                              sx={{ mr: 1 }}
-                            >
-                              <EditIcon />
-                            </IconButton>
-                            <IconButton
-                              color="error"
-                              onClick={() => confirmDeleteSupply(sup.id)}
-                            >
-                              <DeleteIcon />
-                            </IconButton>
-                          </TableCell>
-                        </>
-                      )}
-                    </TableRow>
-                  ))}
-              </TableBody>
-            </Table>
-            <TablePagination
-              rowsPerPageOptions={[8, 16, 24]}
-              component="div"
-              count={filteredSupplies.length}
-              rowsPerPage={rowsPerPage}
-              page={page}
-              onPageChange={handleChangePage}
-              onRowsPerPageChange={handleChangeRowsPerPage}
-            />
-          </TableContainer>
-        </Paper>
-
-        <Paper elevation={6} sx={{ p: 3, mt: 4 }}>
-          <Typography variant="h6" component="h1" align="center" sx={{ mb: 4 }}>
-            Импорт / Экспорт данных
-          </Typography>
-          <Grid container spacing={2} alignItems="center" justifyContent="center">
-            <Grid item>
-              <Button variant="outlined" component="label">
-                Импорт CSV
-                <input type="file" accept=".csv" hidden onChange={importData} />
-              </Button>
-            </Grid>
-            <Grid item>
-              <Button variant="outlined" onClick={exportData}>
-                Экспорт в CSV
-              </Button>
-            </Grid>
-          </Grid>
-        </Paper>
-
-        <Dialog
-          open={openDeleteDialog}
-          onClose={() => setOpenDeleteDialog(false)}
-          aria-labelledby="alert-dialog-title"
-          aria-describedby="alert-dialog-description"
-        >
-          <DialogTitle id="alert-dialog-title">{"Подтвердите удаление"}</DialogTitle>
-          <DialogContent>
-            <DialogContentText id="alert-dialog-description">
-              Вы уверены, что хотите удалить эту поставку? Это действие необратимо.
-            </DialogContentText>
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={() => setOpenDeleteDialog(false)} color="primary">
-              Отмена
-            </Button>
-            <Button onClick={handleDeleteSupply} color="error" autoFocus>
-              Удалить
-            </Button>
-          </DialogActions>
-        </Dialog>
-
-        <Snackbar open={snackbar.open} autoHideDuration={6000} onClose={handleCloseSnackbar}>
-          <Alert onClose={handleCloseSnackbar} severity={snackbar.severity} sx={{ width: '100%' }}>
-            {snackbar.message}
-          </Alert>
-        </Snackbar>
-      </Box>
-    </Container>
-  );
-}
-
-export default Supplies;
+                              />
+                              </TableCell>
+                              <TableCell>
+                                <TextField
+                                  multiline
+                                  value={editingSupply.quantities}
+                                  onChange={(e) =>
+                                    setEditingSupply({ ...editingSupply, quantities: e.target.value })
+                                  }
+                                  variant="standard"
+                                />
+                              </TableCell>
+                              <TableCell>
+                                <TextField
+                                  value={editingSupply.regularSupplier}
+                                  onChange={(e) =>
+                                    setEditingSupply({
+                                      ...editingSupply,
+                                      regularSupplier: e.target.value
+                                    })
+                                  }
+                                  variant="standard"
+                                />
+                              </TableCell>
+                              <TableCell>
+                                <IconButton color="primary" onClick={saveEditing} sx={{ mr: 1 }}>
+                                  <SaveIcon />
+                                </IconButton>
+                                <IconButton color="secondary" onClick={cancelEditing}>
+                                  <CancelIcon />
+                                </IconButton>
+                              </TableCell>
+                            </>
+                          ) : (
+                            <>
+                              <TableCell>{sup.supplyNumber}</TableCell>
+                              <TableCell>{sup.supplyDate}</TableCell>
+                              <TableCell>{sup.medicinesList}</TableCell>
+                              <TableCell>{sup.quantities}</TableCell>
+                              <TableCell>{sup.regularSupplier}</TableCell>
+                              <TableCell>
+                                <IconButton
+                                  color="primary"
+                                  onClick={() => startEditing(sup)}
+                                  sx={{ mr: 1 }}
+                                >
+                                  <EditIcon />
+                                </IconButton>
+                                <IconButton
+                                  color="error"
+                                  onClick={() => confirmDeleteSupply(sup.id)}
+                                >
+                                  <DeleteIcon />
+                                </IconButton>
+                              </TableCell>
+                            </>
+                          )}
+                        </TableRow>
+                      ))}
+                  </TableBody>
+                </Table>
+                <TablePagination
+                  rowsPerPageOptions={[8, 16, 24]}
+                  component="div"
+                  count={filteredSupplies.length}
+                  rowsPerPage={rowsPerPage}
+                  page={page}
+                  onPageChange={handleChangePage}
+                  onRowsPerPageChange={handleChangeRowsPerPage}
+                />
+              </TableContainer>
+            </Paper>
+    
+            <Paper elevation={6} sx={{ p: 3, mt: 4 }}>
+              <Typography variant="h6" component="h1" align="center" sx={{ mb: 4 }}>
+                Импорт / Экспорт данных
+              </Typography>
+              <Grid container spacing={2} alignItems="center" justifyContent="center">
+                <Grid item>
+                  <Button variant="outlined" component="label">
+                    Импорт CSV
+                    <input type="file" accept=".csv" hidden onChange={importData} />
+                  </Button>
+                </Grid>
+                <Grid item>
+                  <Button variant="outlined" onClick={exportData}>
+                    Экспорт в CSV
+                  </Button>
+                </Grid>
+              </Grid>
+            </Paper>
+    
+            <Dialog
+              open={openDeleteDialog}
+              onClose={() => setOpenDeleteDialog(false)}
+              aria-labelledby="alert-dialog-title"
+              aria-describedby="alert-dialog-description"
+            >
+              <DialogTitle id="alert-dialog-title">{"Подтвердите удаление"}</DialogTitle>
+              <DialogContent>
+                <DialogContentText id="alert-dialog-description">
+                  Вы уверены, что хотите удалить эту поставку? Это действие необратимо.
+                </DialogContentText>
+              </DialogContent>
+              <DialogActions>
+                <Button onClick={() => setOpenDeleteDialog(false)} color="primary">
+                  Отмена
+                </Button>
+                <Button onClick={handleDeleteSupply} color="error" autoFocus>
+                  Удалить
+                </Button>
+              </DialogActions>
+            </Dialog>
+    
+            <Snackbar open={snackbar.open} autoHideDuration={6000} onClose={handleCloseSnackbar}>
+              <Alert onClose={handleCloseSnackbar} severity={snackbar.severity} sx={{ width: '100%' }}>
+                {snackbar.message}
+              </Alert>
+            </Snackbar>
+          </Box>
+        </Container>
+      );
+    }
+    
+    export default Supplies;
