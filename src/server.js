@@ -63,7 +63,7 @@ db.serialize(() => {
     }
   });
 
-  // Таблица recipes (новая)
+  // Таблица recipes
   db.run(`
     CREATE TABLE IF NOT EXISTS recipes (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -78,6 +78,23 @@ db.serialize(() => {
       console.error("Ошибка при создании таблицы recipes:", err.message);
     } else {
       console.log("Таблица recipes успешно создана или уже существует");
+    }
+  });
+
+  // Таблица sales (новая)
+  db.run(`
+    CREATE TABLE IF NOT EXISTS sales (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      saleDate TEXT NOT NULL,
+      medicines TEXT NOT NULL,
+      quantities TEXT NOT NULL,
+      totalAmount REAL DEFAULT 0
+    )
+  `, (err) => {
+    if (err) {
+      console.error("Ошибка при создании таблицы sales:", err.message);
+    } else {
+      console.log("Таблица sales успешно создана или уже существует");
     }
   });
 });
@@ -301,6 +318,161 @@ app.delete('/api/recipes/:id', (req, res) => {
       return res.status(404).json({ error: "Рецепт не найден" });
     }
     res.json({ message: "Рецепт удалён", id });
+  });
+});
+
+// Обработчики для sales (новые)
+app.get('/api/sales', (req, res) => {
+  db.all("SELECT * FROM sales", (err, rows) => {
+    if (err) {
+      console.error("Ошибка при получении данных о продажах:", err.message);
+      return res.status(500).json({ error: err.message });
+    }
+    // Преобразование строк JSON обратно в объекты
+    const parsedRows = rows.map(row => ({
+      ...row,
+      medicines: JSON.parse(row.medicines),
+      quantities: JSON.parse(row.quantities)
+    }));
+    res.json(parsedRows);
+  });
+});
+
+app.post('/api/sales', (req, res) => {
+  const { saleDate, medicines, quantities, totalAmount } = req.body;
+  
+  if (!saleDate || !medicines || !quantities) {
+    return res.status(400).json({ error: "Дата продажи, список препаратов и их количество обязательны" });
+  }
+
+  const query = `
+    INSERT INTO sales (saleDate, medicines, quantities, totalAmount)
+    VALUES (?, ?, ?, ?)
+  `;
+
+  // Преобразование объектов в строки JSON для хранения
+  const medicinesJson = JSON.stringify(medicines);
+  const quantitiesJson = JSON.stringify(quantities);
+
+  db.run(query, [saleDate, medicinesJson, quantitiesJson, totalAmount], function(err) {
+    if (err) {
+      console.error("Ошибка при добавлении продажи:", err.message);
+      return res.status(500).json({ error: err.message });
+    }
+
+    // Обновление количества препаратов в таблице medicines
+    medicines.forEach((medicineId) => {
+      db.run(
+        "UPDATE medicines SET quantity = quantity - ? WHERE id = ?",
+        [quantities[medicineId], medicineId]
+      );
+    });
+
+    const newSale = {
+      id: this.lastID,
+      saleDate,
+      medicines,
+      quantities,
+      totalAmount
+    };
+    res.json(newSale);
+  });
+});
+
+app.put('/api/sales/:id', (req, res) => {
+  const { id } = req.params;
+  const { saleDate, medicines, quantities, totalAmount } = req.body;
+
+  // Сначала получаем текущие данные о продаже
+  db.get("SELECT * FROM sales WHERE id = ?", [id], (err, oldSale) => {
+    if (err) {
+      console.error("Ошибка при получении данных о продаже:", err.message);
+      return res.status(500).json({ error: err.message });
+    }
+
+    if (!oldSale) {
+      return res.status(404).json({ error: "Продажа не найдена" });
+    }
+
+    const oldMedicines = JSON.parse(oldSale.medicines);
+    const oldQuantities = JSON.parse(oldSale.quantities);
+
+    // Возвращаем старые количества в наличие
+    oldMedicines.forEach((medicineId) => {
+      db.run(
+        "UPDATE medicines SET quantity = quantity + ? WHERE id = ?",
+        [oldQuantities[medicineId], medicineId]
+      );
+    });
+
+    // Обновляем продажу
+    const medicinesJson = JSON.stringify(medicines);
+    const quantitiesJson = JSON.stringify(quantities);
+
+    const query = `
+      UPDATE sales
+      SET saleDate = ?, medicines = ?, quantities = ?, totalAmount = ?
+      WHERE id = ?
+    `;
+
+    db.run(query, [saleDate, medicinesJson, quantitiesJson, totalAmount, id], function(err) {
+      if (err) {
+        console.error("Ошибка при обновлении продажи:", err.message);
+        return res.status(500).json({ error: err.message });
+      }
+
+      // Вычитаем новые количества
+      medicines.forEach((medicineId) => {
+        db.run(
+          "UPDATE medicines SET quantity = quantity - ? WHERE id = ?",
+          [quantities[medicineId], medicineId]
+        );
+      });
+
+      res.json({
+        id: Number(id),
+        saleDate,
+        medicines,
+        quantities,
+        totalAmount
+      });
+    });
+  });
+});
+
+app.delete('/api/sales/:id', (req, res) => {
+  const { id } = req.params;
+
+  // Сначала получаем данные о продаже
+  db.get("SELECT * FROM sales WHERE id = ?", [id], (err, sale) => {
+    if (err) {
+      console.error("Ошибка при получении данных о продаже:", err.message);
+      return res.status(500).json({ error: err.message });
+    }
+
+    if (!sale) {
+      return res.status(404).json({ error: "Продажа не найдена" });
+    }
+
+    const medicines = JSON.parse(sale.medicines);
+    const quantities = JSON.parse(sale.quantities);
+
+    // Возвращаем количества в наличие
+    medicines.forEach((medicineId) => {
+      db.run(
+        "UPDATE medicines SET quantity = quantity + ? WHERE id = ?",
+        [quantities[medicineId], medicineId]
+      );
+    });
+
+    // Удаляем продажу
+    db.run("DELETE FROM sales WHERE id = ?", [id], function(err) {
+      if (err) {
+        console.error("Ошибка при удалении продажи:", err.message);
+        return res.status(500).json({ error: err.message });
+      }
+      res.json({ message: "Продажа удалена", id });
+    });
   });
 });
 
