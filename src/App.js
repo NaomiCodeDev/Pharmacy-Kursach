@@ -6,8 +6,8 @@ import theme from './theme';
 import Medicines from './pages/Medicines';
 import Clients from './pages/Clients'; // Раскомментируем эту строку
 import Recipes from './pages/Recipes';
-// import Sales from './pages/Sales';
-// import Supplies from './pages/Supplies';
+import Sales from './pages/Sales';
+//import Supplies from './pages/Supplies';
 import Logo from './components/Logo';
 
 function App() {
@@ -43,8 +43,8 @@ function App() {
             <Route path="/medicines" element={<Medicines />} />
             <Route path="/clients" element={<Clients />} />
             <Route path="/recipes" element={<Recipes />} />
-            {/* <Route path="/sales" element={<Sales />} />
-            <Route path="/supplies" element={<Supplies />} /> */}
+            <Route path="/sales" element={<Sales />} />
+            {/* <Route path="/supplies" element={<Supplies />} /> */}
           </Routes>
         </Container>
       </Router>
