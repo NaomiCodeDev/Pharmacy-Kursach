@@ -209,9 +209,9 @@ function Supplies() {
     setSnackbar({ ...snackbar, open: false });
   };
 
-  return (
-    <Container maxWidth="lg">
-      <Box sx={{ p: 4, background: 'rgb(245 245 245)', borderRadius: 2, minHeight: '100vh' }}>
+    return (
+      <Container maxWidth={false} sx={{ maxWidth: '95vw' }}>  {/* Changed from maxWidth="lg" to custom width */}
+        <Box sx={{ p: 4, borderRadius: 2, minHeight: '100vh' }}>
         <Typography variant="h4" component="h1" align="center" sx={{ mb: 4, fontWeight: 'bold', color: 'primary.dark' }}>
           Поставки
         </Typography>
@@ -434,7 +434,7 @@ function Supplies() {
           </TableContainer>
         </Paper>
 
-        <Paper elevation={6} sx={{ p: 3, mt: 4 }}>
+        <Paper elevation={0} sx={{ p: 3, mt: 4 }}>
           <Typography variant="h6" component="h1" align="center" sx={{ mb: 4 }}>
             Импорт / Экспорт данных
           </Typography>
