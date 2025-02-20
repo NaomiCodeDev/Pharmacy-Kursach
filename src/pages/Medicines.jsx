@@ -26,7 +26,8 @@
     InputLabel,
     Select,
     MenuItem,
-    Collapse
+    Collapse,
+    Backdrop
   } from '@mui/material';
   import Papa from 'papaparse';
   import EditIcon from '@mui/icons-material/Edit';
@@ -225,27 +226,47 @@
     const uniqueForms = [...new Set(medicines.map((med) => med.form))];
     const uniqueManufacturers = [...new Set(medicines.map((med) => med.manufacturer))];
 
-  return (
-    <Container maxWidth={false} sx={{ maxWidth: '95vw' }}>  {/* Changed from maxWidth="lg" to custom width */}
-      <Box sx={{ p: 4, borderRadius: 2, minHeight: '100vh' }}>
-          <Typography variant="h4" component="h1" align="center" sx={{ mb: 4, fontWeight: 'bold', color: 'primary.dark' }}>
-            Препараты
-          </Typography>
-
-          {!showAddForm && (
-            <Box sx={{ textAlign: 'center', mb: 4 }}>
-              <Button
-                variant="contained"
-                startIcon={<AddCircleIcon />}
-                onClick={() => setShowAddForm(true)}
-              >
-                Добавить новый препарат
-              </Button>
-            </Box>
-          )}
-
-          <Collapse in={showAddForm} timeout="auto" unmountOnExit>
-            <Paper elevation={6} sx={{ p: 3, mb: 4 }}>
+    return (
+      <Container maxWidth={false} sx={{ maxWidth: '95vw' }}>
+        <Box sx={{ p: 4, borderRadius: 2, minHeight: '100vh', position: 'relative' }}>
+            <Typography variant="h4" component="h1" align="center" sx={{ mb: 4, fontWeight: 'bold', color: 'primary.dark' }}>
+              Препараты
+            </Typography>
+  
+            {!showAddForm && (
+              <Box sx={{ textAlign: 'center', mb: 4 }}>
+                <Button
+                  variant="contained"
+                  startIcon={<AddCircleIcon />}
+                  onClick={() => setShowAddForm(true)}
+                >
+                  Добавить новый препарат
+                </Button>
+              </Box>
+            )}
+  
+            {/* Add Backdrop component */}
+            <Backdrop
+              sx={{
+                color: '#fff',
+                zIndex: (theme) => theme.zIndex.drawer + 1,
+                backgroundColor: 'rgba(0, 0, 0, 0.6)',
+                position: 'fixed'
+              }}
+              open={showAddForm}
+              onClick={() => setShowAddForm(false)}
+            />
+  
+            <Collapse 
+              in={showAddForm} 
+              timeout="auto" 
+              unmountOnExit
+              sx={{
+                position: 'relative',
+                zIndex: (theme) => theme.zIndex.drawer + 2
+              }}
+            >
+              <Paper elevation={6} sx={{ p: 3, mb: 4 }}>
               <Typography variant="h6" sx={{ mb: 2 }}>
                 Добавить препарат
               </Typography>
