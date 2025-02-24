@@ -214,7 +214,7 @@ function Supplies() {
     <Container maxWidth={false} sx={{ maxWidth: '95vw' }}>
       <Box sx={{ p: 4, borderRadius: 2, minHeight: '100vh', position: 'relative' }}>
           <Typography variant="h4" component="h1" align="center" sx={{ mb: 4, fontWeight: 'bold', color: 'primary.dark' }}>
-            Препараты
+            Поставки
           </Typography>
 
           {!showAddForm && (
@@ -224,7 +224,7 @@ function Supplies() {
                 startIcon={<AddCircleIcon />}
                 onClick={() => setShowAddForm(true)}
               >
-                Добавить новый препарат
+                Добавить новые поставки
               </Button>
             </Box>
           )}

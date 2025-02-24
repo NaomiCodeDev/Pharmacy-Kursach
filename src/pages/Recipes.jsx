@@ -194,8 +194,8 @@ function Recipes() {
   };
 
   const filteredRecipes = recipes.filter((rec) => 
-    rec.patientName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    rec.recipeNumber.toLowerCase().includes(searchQuery.toLowerCase())
+    rec.patientName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    rec.recipeNumber?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const handleChangePage = (event, newPage) => {
@@ -215,7 +215,7 @@ function Recipes() {
     <Container maxWidth={false} sx={{ maxWidth: '95vw' }}>
       <Box sx={{ p: 4, borderRadius: 2, minHeight: '100vh', position: 'relative' }}>
           <Typography variant="h4" component="h1" align="center" sx={{ mb: 4, fontWeight: 'bold', color: 'primary.dark' }}>
-            Препараты
+            Рецепты
           </Typography>
 
           {!showAddForm && (
@@ -225,7 +225,7 @@ function Recipes() {
                 startIcon={<AddCircleIcon />}
                 onClick={() => setShowAddForm(true)}
               >
-                Добавить новый препарат
+                Добавить новый рецепт
               </Button>
             </Box>
           )}

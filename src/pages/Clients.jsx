@@ -191,7 +191,7 @@ function Clients() {
   };
 
   const filteredClients = clients.filter((client) =>
-    client.fullName.toLowerCase().includes(searchQuery.toLowerCase())
+    client.fullName?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const handleChangePage = (event, newPage) => {
@@ -211,7 +211,7 @@ function Clients() {
     <Container maxWidth={false} sx={{ maxWidth: '95vw' }}>
       <Box sx={{ p: 4, borderRadius: 2, minHeight: '100vh', position: 'relative' }}>
           <Typography variant="h4" component="h1" align="center" sx={{ mb: 4, fontWeight: 'bold', color: 'primary.dark' }}>
-            Препараты
+            Клиенты
           </Typography>
 
           {!showAddForm && (
@@ -221,7 +221,7 @@ function Clients() {
                 startIcon={<AddCircleIcon />}
                 onClick={() => setShowAddForm(true)}
               >
-                Добавить новый препарат
+                Добавить нового клиента
               </Button>
             </Box>
           )}

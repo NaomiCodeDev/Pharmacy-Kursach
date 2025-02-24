@@ -289,7 +289,7 @@ function Sales() {
     <Container maxWidth={false} sx={{ maxWidth: '95vw' }}>
       <Box sx={{ p: 4, borderRadius: 2, minHeight: '100vh', position: 'relative' }}>
           <Typography variant="h4" component="h1" align="center" sx={{ mb: 4, fontWeight: 'bold', color: 'primary.dark' }}>
-            Препараты
+            Продажи
           </Typography>
 
           {!showAddForm && (
@@ -299,7 +299,7 @@ function Sales() {
                 startIcon={<AddCircleIcon />}
                 onClick={() => setShowAddForm(true)}
               >
-                Добавить новый препарат
+                Добавить новые продажи
               </Button>
             </Box>
           )}
